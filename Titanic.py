@@ -18,6 +18,7 @@ from sklearn.model_selection import GridSearchCV, cross_val_score, StratifiedKFo
 
 sns.set(style='white', context='notebook', palette='deep')
 
+##Load and check data
 #Load train and test dataset
 train = pd.read_csv('E:/machine learing/Titanic/data/train.csv')
 test = pd.read_csv('E:/machine learing/Titanic/data/test.csv')
@@ -42,21 +43,10 @@ train.drop(outlier, axis = 0).reset_index(drop = True)
 #Check for null and missing values
 train = train.fillna(np.nan)
 
-#Feature analysis
+
+##Feature analysis
 train_len = len(train)
 dataset = pd.concat(objs = [train, test], axis = 0).reset_index(drop = True)
-
-#Fill Fare missing values with the median value
-dataset['Fare'] = dataset['Fare'].fillna(dataset['Fare'].median())
-
-#Apply log to Fare to reduce skewness distribution
-dataset['Fare'] = dataset['Fare'].map(lambda i: np.log(i) if i > 0 else 0)
-
-#Fill Embarked nan values of dataset set with 'S' most frequent value
-dataset['Embarked'] = dataset['Embarked'].fillna('S')
-
-#Convert Sex into categorical value 0 for male and 1 for female
-dataset['Sex'] = dataset['Sex'].map({'male': 0, 'female': 1})
 
 #Fill Age with the median age of similar rows according to Pclass, Parch and SibSp
 index_age = list(dataset['Age'][dataset['Age'].isnull()].index)
@@ -70,7 +60,20 @@ for i in index_age :
     else :
         dataset.loc[i, 'Age'] = age_median
 
-#Feature engineering
+#Fill Fare missing values with the median value
+dataset['Fare'] = dataset['Fare'].fillna(dataset['Fare'].median())
+
+#Apply log to Fare to reduce skewness distribution
+dataset['Fare'] = dataset['Fare'].map(lambda i: np.log(i) if i > 0 else 0)
+
+#Fill Embarked nan values of dataset set with 'S' most frequent value
+dataset['Embarked'] = dataset['Embarked'].fillna('S')
+
+#Convert Sex into categorical value 0 for male and 1 for female
+dataset['Sex'] = dataset['Sex'].map({'male': 0, 'female': 1})
+
+
+##Feature engineering
 #Get Title from Name
 dataset['Title'] = pd.Series([re.split('[\,\.]+', x)[1].strip() for x in dataset['Name']])
 
@@ -117,6 +120,7 @@ test.drop(labels = ['Survived'], axis = 1, inplace = True)
 y_train = train['Survived'].astype(int)
 X_train = train.drop(labels = ['Survived'], axis = 1)
 
+##Modeling
 #Cross validate model with Kfold stratified cross val
 kfold = StratifiedKFold(n_splits = 10)
 
@@ -150,7 +154,7 @@ g = sns.barplot('CrossValMeans', 'Algorithm', data = cv_res,
 g.set_xlabel('Mean Accuracy')
 g = g.set_title('Cross validation scores')
 
-#META MODELING  WITH ADABOOST, RF, EXTRATREES and GRADIENTBOOSTING
+#META MODELING WITH ADABOOST, RF, EXTRATREES and GRADIENTBOOSTING
 #Adaboost
 DTC = DecisionTreeClassifier()
 
